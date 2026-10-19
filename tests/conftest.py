@@ -1,10 +1,10 @@
 from unittest.mock import Mock
 import pytest
-from praktikum.burger import Burger
 
 
 @pytest.fixture
 def burger():
+    from praktikum.burger import Burger
     return Burger()
 
 

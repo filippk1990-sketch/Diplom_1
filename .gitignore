@@ -4,3 +4,7 @@ __pycache__/
 .coverage
 htmlcov/
 *.pyc
+
+# Local offline runs must never enter the review PR.
+allure-offline*/
+.pytest_cache/
