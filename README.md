@@ -1,5 +1,8 @@
 # Diplom_1 — Stellar Burgers / unit tests
 
+**Работа для сдачи:** Филипп Крощенко · когорта 53 · GitHub: [filippk1990-sketch](https://github.com/filippk1990-sketch).
+
+
 Оригинальный исходный код: https://github.com/Yandex-Practicum/qa-python-project (ранее qa-python-diplom). Код класса `Burger` оставлен без изменений.
 
 ```powershell
