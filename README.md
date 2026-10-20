@@ -3,9 +3,9 @@
 Оригинальный исходный код: https://github.com/Yandex-Practicum/qa-python-project (ранее qa-python-diplom). Код класса `Burger` оставлен без изменений.
 
 ```powershell
-py -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python -m pytest
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest
 start htmlcov\index.html
 ```
 
