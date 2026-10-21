@@ -2,58 +2,86 @@ import pytest
 
 
 class TestBurger:
-    def test_new_burger_is_empty(self, burger):
-        assert burger.bun is None and burger.ingredients == []
-
-    def test_set_buns_replaces_bun(self, burger, bun):
+    def test_set_buns_updates_price(self, burger, bun):
         burger.set_buns(bun)
-        assert burger.bun is bun
+        assert burger.get_price() == pytest.approx(201.0)
 
-    def test_add_ingredient_appends(self, burger, sauce, filling):
+    def test_set_buns_replaces_previous_bun(self, burger, bun, second_bun):
+        burger.set_buns(bun)
+        burger.set_buns(second_bun)
+        assert burger.get_price() == pytest.approx(160.0)
+
+    def test_add_sauce_updates_price(self, burger, bun, sauce):
+        burger.set_buns(bun)
+        burger.add_ingredient(sauce)
+        assert burger.get_price() == pytest.approx(226.25)
+
+    def test_add_filling_updates_receipt(self, burger, bun, filling):
+        burger.set_buns(bun)
+        burger.add_ingredient(filling)
+        assert "= filling Котлета =" in burger.get_receipt()
+
+    @pytest.mark.parametrize(
+        "index, expected_price",
+        [(0, 271.0), (1, 226.25)],
+        ids=["remove_sauce", "remove_filling"],
+    )
+    def test_remove_ingredient(self, burger, bun, sauce, filling, index, expected_price):
+        burger.set_buns(bun)
         burger.add_ingredient(sauce)
         burger.add_ingredient(filling)
-        assert burger.ingredients == [sauce, filling]
-
-    @pytest.mark.parametrize("index, expected", [(0, "filling"), (1, "sauce")])
-    def test_remove_ingredient_by_index(self, burger, sauce, filling, index, expected):
-        burger.ingredients = [sauce, filling]
         burger.remove_ingredient(index)
-        assert burger.ingredients == [filling if expected == "filling" else sauce]
+        assert burger.get_price() == pytest.approx(expected_price)
 
-    @pytest.mark.parametrize("from_index,to_index,expected", [
-        (0, 2, ["filling", "extra", "sauce"]),
-        (2, 0, ["extra", "sauce", "filling"]),
-        (1, 1, ["sauce", "filling", "extra"]),
-    ])
-    def test_move_ingredient(self, burger, sauce, filling, from_index, to_index, expected):
-        extra = object()
-        burger.ingredients = [sauce, filling, extra]
+    @pytest.mark.parametrize(
+        "from_index, to_index, expected",
+        [
+            (0, 2, ["= filling Котлета =", "= sauce Дополнительный соус =", "= sauce Космо-соус ="]),
+            (2, 0, ["= sauce Дополнительный соус =", "= sauce Космо-соус =", "= filling Котлета ="]),
+            (1, 1, ["= sauce Космо-соус =", "= filling Котлета =", "= sauce Дополнительный соус ="]),
+        ],
+        ids=["first_to_last", "last_to_first", "same_position"],
+    )
+    def test_move_ingredient(self, burger, bun, sauce, filling, extra_sauce,
+                             from_index, to_index, expected):
+        burger.set_buns(bun)
+        burger.add_ingredient(sauce)
+        burger.add_ingredient(filling)
+        burger.add_ingredient(extra_sauce)
         burger.move_ingredient(from_index, to_index)
-        names = ["sauce" if x is sauce else "filling" if x is filling else "extra"
-                 for x in burger.ingredients]
-        assert names == expected
+        assert burger.get_receipt().splitlines()[1:4] == expected
 
-    @pytest.mark.parametrize("add_sauce, add_filling, expected", [
-        (False, False, 201.0),
-        (True, False, 226.25),
-        (True, True, 296.25),
-    ])
-    def test_get_price(self, burger, bun, sauce, filling, add_sauce, add_filling, expected):
+    def test_get_price_without_ingredients(self, burger, bun):
         burger.set_buns(bun)
-        if add_sauce:
-            burger.add_ingredient(sauce)
-        if add_filling:
-            burger.add_ingredient(filling)
-        assert burger.get_price() == pytest.approx(expected)
+        assert burger.get_price() == pytest.approx(201.0)
 
-    @pytest.mark.parametrize("with_ingredients, expected", [
-        (False, "(==== Краторная булка ====)\n(==== Краторная булка ====)\n\nPrice: 201.0"),
-        (True, "(==== Краторная булка ====)\n= sauce Космо-соус =\n= filling Котлета =\n(==== Краторная булка ====)\n\nPrice: 296.25"),
-    ])
-    def test_get_receipt(self, burger, bun, sauce, filling, with_ingredients, expected):
+    def test_get_price_with_sauce(self, burger, bun, sauce):
         burger.set_buns(bun)
-        if with_ingredients:
-            burger.add_ingredient(sauce)
-            burger.add_ingredient(filling)
-        assert burger.get_receipt() == expected
-        assert bun.get_name.called
+        burger.add_ingredient(sauce)
+        assert burger.get_price() == pytest.approx(226.25)
+
+    def test_get_price_with_sauce_and_filling(self, burger, bun, sauce, filling):
+        burger.set_buns(bun)
+        burger.add_ingredient(sauce)
+        burger.add_ingredient(filling)
+        assert burger.get_price() == pytest.approx(296.25)
+
+    def test_get_receipt_without_ingredients(self, burger, bun):
+        burger.set_buns(bun)
+        assert burger.get_receipt() == (
+            "(==== Краторная булка ====)\n"
+            "(==== Краторная булка ====)\n\n"
+            "Price: 201.0"
+        )
+
+    def test_get_receipt_with_ingredients(self, burger, bun, sauce, filling):
+        burger.set_buns(bun)
+        burger.add_ingredient(sauce)
+        burger.add_ingredient(filling)
+        assert burger.get_receipt() == (
+            "(==== Краторная булка ====)\n"
+            "= sauce Космо-соус =\n"
+            "= filling Котлета =\n"
+            "(==== Краторная булка ====)\n\n"
+            "Price: 296.25"
+        )
