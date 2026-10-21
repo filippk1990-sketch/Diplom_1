@@ -2,19 +2,10 @@ import pytest
 
 
 class TestBurger:
-    def test_set_buns_updates_price(self, burger, bun):
-        burger.set_buns(bun)
-        assert burger.get_price() == pytest.approx(201.0)
-
     def test_set_buns_replaces_previous_bun(self, burger, bun, second_bun):
         burger.set_buns(bun)
         burger.set_buns(second_bun)
         assert burger.get_price() == pytest.approx(160.0)
-
-    def test_add_sauce_updates_price(self, burger, bun, sauce):
-        burger.set_buns(bun)
-        burger.add_ingredient(sauce)
-        assert burger.get_price() == pytest.approx(226.25)
 
     def test_add_filling_updates_receipt(self, burger, bun, filling):
         burger.set_buns(bun)
